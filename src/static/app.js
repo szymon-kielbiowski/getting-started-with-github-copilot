@@ -4,13 +4,28 @@ document.addEventListener("DOMContentLoaded", () => {
   const signupForm = document.getElementById("signup-form");
   const messageDiv = document.getElementById("message");
 
+  let messageTimeout = null;
+
+  function escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#39;");
+  }
+
   function showMessage(message, type) {
+    if (messageTimeout) {
+      clearTimeout(messageTimeout);
+    }
     messageDiv.textContent = message;
-    messageDiv.className = type;
+    messageDiv.className = "message " + type;
     messageDiv.classList.remove("hidden");
 
-    setTimeout(() => {
+    messageTimeout = setTimeout(() => {
       messageDiv.classList.add("hidden");
+      messageTimeout = null;
     }, 5000);
   }
 
@@ -33,31 +48,33 @@ document.addEventListener("DOMContentLoaded", () => {
         activityCard.className = "activity-card";
 
         const spotsLeft = details.max_participants - details.participants.length;
+        const escapedName = escapeHtml(name);
         const participantsMarkup = details.participants.length
           ? details.participants
-              .map(
-                (participant) => `
+              .map((participant) => {
+                const escapedParticipant = escapeHtml(participant);
+                return `
                   <li class="participant-item">
-                    <span class="participant-email">${participant}</span>
+                    <span class="participant-email">${escapedParticipant}</span>
                     <button
                       type="button"
                       class="participant-delete"
-                      data-activity="${name}"
-                      data-email="${participant}"
-                      aria-label="Remove ${participant} from ${name}"
+                      data-activity="${escapedName}"
+                      data-email="${escapedParticipant}"
+                      aria-label="Remove ${escapedParticipant} from ${escapedName}"
                       title="Remove participant"
                     >
                       <span aria-hidden="true">&times;</span>
                     </button>
-                  </li>`
-              )
+                  </li>`;
+              })
               .join("")
           : '<li class="participants-empty">No participants yet</li>';
 
         activityCard.innerHTML = `
-          <h4>${name}</h4>
-          <p>${details.description}</p>
-          <p><strong>Schedule:</strong> ${details.schedule}</p>
+          <h4>${escapedName}</h4>
+          <p>${escapeHtml(details.description)}</p>
+          <p><strong>Schedule:</strong> ${escapeHtml(details.schedule)}</p>
           <p><strong>Availability:</strong> ${spotsLeft} spots left</p>
           <div class="participants-section">
             <p class="participants-title">Participants</p>

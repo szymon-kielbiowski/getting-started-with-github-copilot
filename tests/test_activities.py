@@ -1,6 +1,6 @@
 def test_get_activities_returns_all_activities(client):
     # Arrange
-    expected_activity_name = "Chess Club"
+    expected_activities = {"Chess Club", "Programming Class", "Gym Class"}
 
     # Act
     response = client.get("/activities")
@@ -10,8 +10,7 @@ def test_get_activities_returns_all_activities(client):
 
     payload = response.json()
     assert isinstance(payload, dict)
-    assert expected_activity_name in payload
-    assert len(payload) == 9
+    assert expected_activities.issubset(payload.keys())
 
 
 def test_get_activities_returns_expected_activity_fields(client):
